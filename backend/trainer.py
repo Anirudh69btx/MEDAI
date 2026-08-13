@@ -1,25 +1,28 @@
 """backend/trainer.py
-================================
+
 Scikit-Learn Model Training Pipeline for MindCare AI.
 
-This module orchestrates training, cross-validation, hyperparameter-aware
-fitting, evaluation on validation and test sets, and performance tracking
-for 6 Scikit-Learn classification algorithms:
+This module orchestrates training, cross-validation, fitting, evaluation,
+and performance tracking for five resource-conscious Scikit-Learn
+classification algorithms:
+
 1. Logistic Regression
 2. Decision Tree Classifier
 3. Random Forest Classifier
-4. K-Nearest Neighbors Classifier
-5. Support Vector Machine Classifier
-6. Gaussian Naive Bayes Classifier
+4. Linear Support Vector Machine Classifier
+5. Gaussian Naive Bayes Classifier
+
+K-Nearest Neighbors is intentionally excluded because prediction on the
+full 175K-row training split with 657 engineered features is prohibitively
+memory-intensive on the target hardware.
 
 Features:
-- Stratified Train/Val/Test splitting
-- Stratified K-Fold Cross-Validation with individual fold scores saved
+- Stratified Train/Validation/Test splitting
+- Stratified 3-Fold Cross-Validation
 - Preprocessing pipeline saving via FeatureEngineer.save()
-- Probability & ROC-AUC score calculations
-- Comprehensive exception handling per model
-- Delegation of model persistence to ModelSaver
-- Module-level __all__ exports
+- Probability & ROC-AUC calculation when supported
+- Comprehensive per-model exception handling
+- Model persistence compatibility through ModelSaver
 """
 
 from __future__ import annotations
@@ -44,8 +47,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
 from .config import config
@@ -98,16 +100,10 @@ class ModelEvaluationResult:
 
 
 class ModelTrainer:
-    """Orchestrates Scikit-Learn multi-model training, cross-validation, and evaluation."""
+    """Orchestrates Scikit-Learn multi-model training, CV, and evaluation."""
 
     def __init__(self, target_column: str) -> None:
-        """Initialize the trainer with target column specification.
-
-        Parameters
-        ----------
-        target_column : str
-            The column name representing the classification target variable.
-        """
+        """Initialize the trainer with target column specification."""
         self.target_column = target_column
         self.feature_engineer: FeatureEngineer | None = None
         self.results: Dict[str, ModelEvaluationResult] = {}
@@ -120,23 +116,29 @@ class ModelTrainer:
 
     def prepare_data(
         self, df: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
-        """Split dataset into Train, Validation, and Test sets, fit preprocessing, and persist pipeline.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Raw or cleaned dataset containing features and target column.
-
-        Returns
-        -------
-        Tuple of (X_train, X_val, X_test, y_train, y_val, y_test)
-        """
+    ) -> Tuple[
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.Series,
+        pd.Series,
+        pd.Series,
+    ]:
+        """Split dataset, fit preprocessing on train only, and transform all splits."""
         if self.target_column not in df.columns:
-            raise ValueError(f"Target column '{self.target_column}' not found in dataset.")
+            norm_target = str(self.target_column).strip().lower().replace(" ", "_")
+            norm_map = {
+                str(c).strip().lower().replace(" ", "_"): c for c in df.columns
+            }
+            if norm_target in norm_map:
+                self.target_column = norm_map[norm_target]
+            else:
+                raise ValueError(
+                    f"Target column '{self.target_column}' not found in dataset."
+                )
 
         logger.info("Splitting dataset into Train, Validation, and Test sets...")
-        
+
         test_size = config.TEST_SIZE
         val_size = config.VALID_SIZE
         seed = config.RANDOM_SEED
@@ -147,7 +149,10 @@ class ModelTrainer:
         stratify = y if y.nunique() <= 20 else None
 
         df_train_val, df_test = train_test_split(
-            X_df, test_size=test_size, random_state=seed, stratify=stratify
+            X_df,
+            test_size=test_size,
+            random_state=seed,
+            stratify=stratify,
         )
 
         relative_val_size = val_size / (1.0 - test_size)
@@ -161,15 +166,17 @@ class ModelTrainer:
             stratify=stratify_val,
         )
 
-        # Fit Feature Engineer on Train set only
+        # Fit Feature Engineer on Train set only.
         self.feature_engineer = FeatureEngineer(target_column=self.target_column)
         self.feature_engineer.fit(df_train)
 
-        # Verify FeatureEngineer.save() persists the full pipeline and feature names
         self.feature_engineer.save(config.MODELS_DIR)
-        logger.info("Saved feature engineering pipeline to %s", config.MODELS_DIR)
+        logger.info(
+            "Saved feature engineering pipeline to %s",
+            config.MODELS_DIR,
+        )
 
-        # Transform all splits
+        # Transform all splits.
         self.X_train = self.feature_engineer.transform(df_train)
         self.X_val = self.feature_engineer.transform(df_val)
         self.X_test = self.feature_engineer.transform(df_test)
@@ -195,19 +202,28 @@ class ModelTrainer:
         )
 
     def _get_candidate_models(self) -> Dict[str, Any]:
-        """Instantiate candidate Scikit-Learn models with configured hyperparameters."""
+        """Instantiate resource-conscious Scikit-Learn candidate models."""
         seed = config.RANDOM_SEED
+
         return {
             "Logistic Regression": LogisticRegression(
-                random_state=seed, max_iter=1000, multi_class="auto"
+                random_state=seed,
+                max_iter=1000,
+                n_jobs=1,
             ),
-            "Decision Tree": DecisionTreeClassifier(random_state=seed, max_depth=10),
+            "Decision Tree": DecisionTreeClassifier(
+                random_state=seed,
+                max_depth=10,
+            ),
             "Random Forest": RandomForestClassifier(
-                n_estimators=100, random_state=seed, n_jobs=-1
+                n_estimators=50,
+                random_state=seed,
+                n_jobs=1,
             ),
-            "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=5, n_jobs=-1),
-            "Support Vector Machine": SVC(
-                kernel="rbf", probability=True, random_state=seed
+            "Support Vector Machine": LinearSVC(
+                dual=False,
+                random_state=seed,
+                max_iter=2000,
             ),
             "Gaussian Naive Bayes": GaussianNB(),
         }
@@ -215,13 +231,7 @@ class ModelTrainer:
     def train_and_evaluate_all(
         self,
     ) -> Tuple[str, Any, Dict[str, ModelEvaluationResult]]:
-        """Train candidate models, perform 5-fold CV, evaluate on validation and test sets, and select best model.
-
-        Returns
-        -------
-        Tuple of (best_model_name, best_model_instance, results_dict)
-            Model objects and results are returned for ModelSaver serialization.
-        """
+        """Train candidates with 3-fold CV, evaluate, and select the best model."""
         if (
             self.X_train is None
             or self.X_val is None
@@ -230,14 +240,26 @@ class ModelTrainer:
             or self.y_val is None
             or self.y_test is None
         ):
-            raise RuntimeError("Data must be prepared via prepare_data() before training.")
+            raise RuntimeError(
+                "Data must be prepared via prepare_data() before training."
+            )
 
         candidate_models = self._get_candidate_models()
-        average_mode = "weighted" if self.y_train.nunique() > 2 else "binary"
-        is_binary = self.y_train.nunique() == 2
 
+        is_binary = self.y_train.nunique() == 2
+        average_mode = "binary" if is_binary else "weighted"
+
+        # Dataset target uses string labels ("Yes"/"No"), so explicitly
+        # identify "Yes" as the positive class for binary metrics.
+        pos_label = "Yes" if is_binary else None
+        binary_kwargs = {"pos_label": pos_label} if is_binary else {}
+
+        # Three folds substantially reduce repeated training cost while
+        # retaining meaningful stratified cross-validation for this dataset.
         skf = StratifiedKFold(
-            n_splits=5, shuffle=True, random_state=config.RANDOM_SEED
+            n_splits=3,
+            shuffle=True,
+            random_state=config.RANDOM_SEED,
         )
 
         best_val_score = -1.0
@@ -248,27 +270,38 @@ class ModelTrainer:
             logger.info("Starting training & evaluation for: %s", name)
 
             try:
-                # 1. Stratified Cross-Validation on Training set
+                # 1. Stratified 3-Fold Cross-Validation on training data.
                 cv_scores = cross_val_score(
-                    model, self.X_train, self.y_train, cv=skf, scoring="accuracy"
+                    model,
+                    self.X_train,
+                    self.y_train,
+                    cv=skf,
+                    scoring="accuracy",
+                    n_jobs=1,
                 )
                 cv_scores_list = [float(s) for s in cv_scores]
                 cv_mean = float(np.mean(cv_scores_list))
                 cv_std = float(np.std(cv_scores_list))
 
-                # 2. Fit model on full training set
+                # 2. Fit model on full training set and record training time.
                 start_train = time.perf_counter()
                 model.fit(self.X_train, self.y_train)
                 train_time = time.perf_counter() - start_train
 
-                # 3. Evaluation on Validation set (used for model selection)
+                # 3. Validation evaluation used for model selection.
                 val_preds = model.predict(self.X_val)
                 val_acc = float(accuracy_score(self.y_val, val_preds))
                 val_f1 = float(
-                    f1_score(self.y_val, val_preds, average=average_mode, zero_division=0)
+                    f1_score(
+                        self.y_val,
+                        val_preds,
+                        average=average_mode,
+                        zero_division=0,
+                        **binary_kwargs,
+                    )
                 )
 
-                # 4. Final Evaluation on Test set
+                # 4. Final test evaluation and inference timing.
                 start_infer = time.perf_counter()
                 y_pred = model.predict(self.X_test)
                 infer_time = time.perf_counter() - start_infer
@@ -276,40 +309,72 @@ class ModelTrainer:
                 acc = float(accuracy_score(self.y_test, y_pred))
                 prec = float(
                     precision_score(
-                        self.y_test, y_pred, average=average_mode, zero_division=0
+                        self.y_test,
+                        y_pred,
+                        average=average_mode,
+                        zero_division=0,
+                        **binary_kwargs,
                     )
                 )
                 rec = float(
                     recall_score(
-                        self.y_test, y_pred, average=average_mode, zero_division=0
+                        self.y_test,
+                        y_pred,
+                        average=average_mode,
+                        zero_division=0,
+                        **binary_kwargs,
                     )
                 )
                 f1 = float(
-                    f1_score(self.y_test, y_pred, average=average_mode, zero_division=0)
-                )
-                cm = confusion_matrix(self.y_test, y_pred)
-                clf_rep_dict = classification_report(
-                    self.y_test, y_pred, output_dict=True, zero_division=0
-                )
-                clf_rep_text = classification_report(
-                    self.y_test, y_pred, zero_division=0
+                    f1_score(
+                        self.y_test,
+                        y_pred,
+                        average=average_mode,
+                        zero_division=0,
+                        **binary_kwargs,
+                    )
                 )
 
-                # 5. ROC-AUC calculation if probability prediction is supported
+                cm = confusion_matrix(self.y_test, y_pred)
+
+                clf_rep_dict = classification_report(
+                    self.y_test,
+                    y_pred,
+                    output_dict=True,
+                    zero_division=0,
+                )
+                clf_rep_text = classification_report(
+                    self.y_test,
+                    y_pred,
+                    zero_division=0,
+                )
+
+                # 5. ROC-AUC when the estimator exposes probabilities.
+                # LinearSVC does not expose predict_proba(), so its ROC-AUC
+                # is intentionally left as None.
                 roc_auc = None
                 if hasattr(model, "predict_proba"):
                     try:
                         probs = model.predict_proba(self.X_test)
                         if is_binary:
-                            roc_auc = float(roc_auc_score(self.y_test, probs[:, 1]))
+                            roc_auc = float(
+                                roc_auc_score(self.y_test, probs[:, 1])
+                            )
                         else:
                             roc_auc = float(
                                 roc_auc_score(
-                                    self.y_test, probs, multi_class="ovr", average="weighted"
+                                    self.y_test,
+                                    probs,
+                                    multi_class="ovr",
+                                    average="weighted",
                                 )
                             )
                     except Exception as roc_exc:
-                        logger.warning("ROC-AUC calculation skipped for %s: %s", name, roc_exc)
+                        logger.warning(
+                            "ROC-AUC calculation skipped for %s: %s",
+                            name,
+                            roc_exc,
+                        )
 
                 result = ModelEvaluationResult(
                     model_name=name,
@@ -334,7 +399,8 @@ class ModelTrainer:
                 self.results[name] = result
 
                 logger.info(
-                    "%s -> 5-Fold CV: %.4f (+/- %.4f) | Val Acc: %.4f | Test Acc: %.4f | F1: %.4f | Fit Time: %.3fs",
+                    "%s -> 3-Fold CV: %.4f (+/- %.4f) | "
+                    "Val Acc: %.4f | Test Acc: %.4f | F1: %.4f | Fit Time: %.3fs",
                     name,
                     cv_mean,
                     cv_std,
@@ -344,23 +410,32 @@ class ModelTrainer:
                     train_time,
                 )
 
-                # Model Selection based on Validation set performance
+                # Model selection uses validation accuracy first and
+                # validation F1 as the tie-breaker.
                 if val_acc > best_val_score or (
                     abs(val_acc - best_val_score) < 1e-4
-                    and (best_model_instance is None or val_f1 > self.results[best_model_name].val_f1)
+                    and (
+                        best_model_instance is None
+                        or val_f1 > self.results[best_model_name].val_f1
+                    )
                 ):
                     best_val_score = val_acc
                     best_model_name = name
                     best_model_instance = model
 
             except Exception as exc:
-                logger.exception("Failed training model '%s': %s", name, exc)
+                logger.exception(
+                    "Failed training model '%s': %s",
+                    name,
+                    exc,
+                )
 
         if not self.results or best_model_instance is None:
             raise RuntimeError("All candidate model training attempts failed.")
 
         logger.info(
-            "Best Candidate Model selected based on Validation set: '%s' (Val Acc: %.4f)",
+            "Best Candidate Model selected based on Validation set: '%s' "
+            "(Val Acc: %.4f)",
             best_model_name,
             best_val_score,
         )

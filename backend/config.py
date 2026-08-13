@@ -1,4 +1,4 @@
-﻿"""MindCare AI - Central configuration module.
+"""MindCare AI - Central configuration module.
 
 Defines a single ``Config`` dataclass aggregating all project-wide settings:
 file system paths, random seeds, model-training hyper-parameters, and PyTorch
@@ -51,6 +51,7 @@ class Config:
     # ------------------------------------------------------------------ #
     #  Training hyper-parameters
     # ------------------------------------------------------------------ #
+    DEFAULT_TARGET_COLUMN: str = "treatment"
     TEST_SIZE: float = 0.2
     VALID_SIZE: float = 0.2
     N_EPOCHS: int = 50
@@ -121,6 +122,7 @@ class Config:
             "reports_dir": str(self.REPORTS_DIR),
             "plots_dir": str(self.PLOTS_DIR),
             "random_seed": self.RANDOM_SEED,
+            "default_target_column": self.DEFAULT_TARGET_COLUMN,
             "test_size": self.TEST_SIZE,
             "valid_size": self.VALID_SIZE,
             "n_epochs": self.N_EPOCHS,

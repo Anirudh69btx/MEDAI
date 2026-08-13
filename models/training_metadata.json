@@ -1,0 +1,179 @@
+{
+    "best_model_name": "PyTorch Deep Learning",
+    "best_sklearn_model": "Decision Tree",
+    "selection_reason": "Selected 'PyTorch Deep Learning' as the best performing model with the highest Accuracy of 0.7778 (Recall: 0.8397, F1: 0.7924).",
+    "training_timestamp": "2026-08-13T18:26:48Z",
+    "config": {
+        "project_root": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI",
+        "dataset_path": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI\\dataset\\data.csv",
+        "models_dir": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI\\models",
+        "logs_dir": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI\\logs",
+        "reports_dir": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI\\reports",
+        "plots_dir": "C:\\Users\\danny\\OneDrive\\Documents\\coding\\MEDAI\\plots",
+        "random_seed": 42,
+        "default_target_column": "treatment",
+        "test_size": 0.2,
+        "valid_size": 0.2,
+        "n_epochs": 50,
+        "batch_size": 64,
+        "learning_rate": 0.001,
+        "device": "cpu",
+        "hyperparams": {
+            "hidden_dims": [
+                128,
+                64,
+                32
+            ],
+            "dropout_rate": 0.2,
+            "activation": "leaky_relu",
+            "num_workers": 0
+        }
+    },
+    "sklearn_results": {
+        "Logistic Regression": {
+            "model_name": "Logistic Regression",
+            "cv_scores": [
+                0.7165700408735656,
+                0.7204179706873258,
+                0.7183951292926529
+            ],
+            "cv_mean_score": 0.7184610469511815,
+            "cv_std_score": 0.0015716021159283427,
+            "accuracy": 0.7168949771689498,
+            "precision": 0.7144085452561262,
+            "recall": 0.7317841536533315,
+            "f1_score": 0.7229919678714859,
+            "roc_auc": 0.78778046571425,
+            "val_accuracy": 0.7160398816547808,
+            "val_f1": 0.7219412533074321,
+            "confusion_matrix": [
+                [
+                    20316,
+                    8636
+                ],
+                [
+                    7918,
+                    21603
+                ]
+            ],
+            "training_time_seconds": 5.386502800000017,
+            "inference_time_seconds": 0.03421200000047975
+        },
+        "Decision Tree": {
+            "model_name": "Decision Tree",
+            "cv_scores": [
+                0.7587433516323774,
+                0.7656183195662956,
+                0.7669824873443699
+            ],
+            "cv_mean_score": 0.7637813861810142,
+            "cv_std_score": 0.003605697576209847,
+            "accuracy": 0.7583500076958596,
+            "precision": 0.7316038161735937,
+            "recall": 0.8234477151858,
+            "f1_score": 0.7748135398737809,
+            "roc_auc": 0.8440144516996948,
+            "val_accuracy": 0.7581105809518923,
+            "val_f1": 0.774317079397498,
+            "confusion_matrix": [
+                [
+                    20034,
+                    8918
+                ],
+                [
+                    5212,
+                    24309
+                ]
+            ],
+            "training_time_seconds": 1.8990284000010433,
+            "inference_time_seconds": 0.046673100001498824
+        },
+        "Random Forest": {
+            "model_name": "Random Forest",
+            "cv_scores": [
+                0.7350914097104646,
+                0.7380500401894892,
+                0.7346764263237104
+            ],
+            "cv_mean_score": 0.7359392920745548,
+            "cv_std_score": 0.0015021087413688175,
+            "accuracy": 0.7345783524019633,
+            "precision": 0.7282449219132079,
+            "recall": 0.7566139358422818,
+            "f1_score": 0.7421584263689527,
+            "roc_auc": 0.8014859030058632,
+            "val_accuracy": 0.7341166008243121,
+            "val_f1": 0.7417742123008952,
+            "confusion_matrix": [
+                [
+                    20617,
+                    8335
+                ],
+                [
+                    7185,
+                    22336
+                ]
+            ],
+            "training_time_seconds": 11.354750999998942,
+            "inference_time_seconds": 0.4996434999993653
+        },
+        "Support Vector Machine": {
+            "model_name": "Support Vector Machine",
+            "cv_scores": [
+                0.7164161236810151,
+                0.7210678432780941,
+                0.7195238746750582
+            ],
+            "cv_mean_score": 0.7190026138780558,
+            "cv_std_score": 0.0019344953547511805,
+            "accuracy": 0.71699758863065,
+            "precision": 0.7145361336199768,
+            "recall": 0.7318180278445852,
+            "f1_score": 0.7230738335899324,
+            "roc_auc": null,
+            "val_accuracy": 0.7161424931164811,
+            "val_f1": 0.7220417322570921,
+            "confusion_matrix": [
+                [
+                    20321,
+                    8631
+                ],
+                [
+                    7917,
+                    21604
+                ]
+            ],
+            "training_time_seconds": 3.3806818000011845,
+            "inference_time_seconds": 0.013536400001612492
+        },
+        "Gaussian Naive Bayes": {
+            "model_name": "Gaussian Naive Bayes",
+            "cv_scores": [
+                0.5498093137003404,
+                0.5496896003283567,
+                0.5493911615816117
+            ],
+            "cv_mean_score": 0.5496300252034363,
+            "cv_std_score": 0.00017583078083065407,
+            "accuracy": 0.5484924666085201,
+            "precision": 0.5278959979972104,
+            "recall": 1.0,
+            "f1_score": 0.6910103811897991,
+            "roc_auc": 0.544055678364189,
+            "val_accuracy": 0.5478254921074684,
+            "val_f1": 0.6906951171006762,
+            "confusion_matrix": [
+                [
+                    2551,
+                    26401
+                ],
+                [
+                    0,
+                    29521
+                ]
+            ],
+            "training_time_seconds": 0.2628884999994625,
+            "inference_time_seconds": 0.07187820000035572
+        }
+    }
+}

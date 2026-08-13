@@ -1,4 +1,4 @@
-﻿"""MindCare AI - Mental Health Recommendation Engine.
+"""MindCare AI - Mental Health Recommendation Engine.
 
 Generates evidence-based, personalised mental health recommendations from a
 model prediction result. Recommendations are organised into tiers:
@@ -96,6 +96,70 @@ _RECOMMENDATIONS: Dict[str, Dict[str, Any]] = {
         "self_care": [
             "Continue healthy sleep, exercise, and social connection habits.",
             "Practice gratitude journaling to reinforce positive mental states.",
+        ],
+        "resources": [
+            "WHO Mental Health: https://www.who.int/health-topics/mental-health",
+        ],
+    },
+    "yes": {
+        "risk_level": "moderate_to_high",
+        "immediate_actions": [
+            "Schedule a consultation with a licensed mental health professional.",
+            "If experiencing acute distress, contact a mental health crisis helpline immediately.",
+        ],
+        "professional_referral": [
+            "Consult a psychiatrist or clinical psychologist for a formal evaluation.",
+            "Explore evidence-based therapies such as Cognitive Behavioural Therapy (CBT).",
+        ],
+        "self_care": [
+            "Maintain a regular daily routine including consistent sleep hygiene and meals.",
+            "Practice stress-reduction techniques such as mindfulness or structured breathing.",
+            "Maintain strong social connections with trusted friends, family, or colleagues.",
+        ],
+        "resources": [
+            "iCall Helpline (India): 9152987821",
+            "Vandrevala Foundation: 1860-2662-345",
+            "988 Suicide & Crisis Lifeline (US): Call/Text 988",
+        ],
+    },
+    "no": {
+        "risk_level": "minimal_to_low",
+        "immediate_actions": [],
+        "professional_referral": [
+            "Continue periodic wellness check-ins with your healthcare provider.",
+        ],
+        "self_care": [
+            "Maintain regular sleep schedules, physical exercise, and balanced nutrition.",
+            "Practice proactive stress management and healthy work-life boundaries.",
+            "Nurture supportive social relationships.",
+        ],
+        "resources": [
+            "WHO Mental Health: https://www.who.int/health-topics/mental-health",
+        ],
+    },
+    "treatment": {
+        "risk_level": "moderate_to_high",
+        "immediate_actions": [
+            "Schedule a consultation with a licensed mental health professional.",
+        ],
+        "professional_referral": [
+            "Consult a psychiatrist or clinical psychologist for evaluation.",
+        ],
+        "self_care": [
+            "Maintain a regular daily routine and practice stress-reduction techniques.",
+        ],
+        "resources": [
+            "iCall Helpline (India): 9152987821",
+        ],
+    },
+    "no_treatment": {
+        "risk_level": "minimal_to_low",
+        "immediate_actions": [],
+        "professional_referral": [
+            "Continue periodic mental health check-ins.",
+        ],
+        "self_care": [
+            "Maintain regular sleep, physical activity, and social connections.",
         ],
         "resources": [
             "WHO Mental Health: https://www.who.int/health-topics/mental-health",

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindCare AI — Mental Health Monitoring & Recommendation System</title>
+  
+  <!-- SEO & Meta -->
+  <meta name="description" content="MindCare AI is a futuristic conversational mental health monitoring and personalized recommendation assistant powered by deep neural networks.">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Full Viewport Background with GIF & Dark Overlay -->
+  <div class="bg-media" aria-hidden="true"></div>
+  <div class="bg-overlay" aria-hidden="true"></div>
+
+  <!-- Main Container -->
+  <div class="app-viewport">
+    
+    <!-- Top Header -->
+    <header class="page-header">
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">NEURAL CLINICAL INTELLIGENCE</span>
+      </div>
+      <h1 class="page-title">MINDCARE AI CHATBOT</h1>
+      <p class="page-subtitle">Conversational Mental Health Assessment & Recommendation Engine</p>
+    </header>
+
+    <!-- Main Chatbot Card (Black Interior, White Outline) -->
+    <main class="chatbot-container" role="main" aria-label="MindCare AI Chatbot Interface">
+      
+      <!-- Chatbot Top Bar -->
+      <div class="chat-header">
+        <div class="chat-header-brand">
+          <div class="brand-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a8 8 0 0 0-8 8c0 3.3 2 6.2 5 7.4V20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2.6c3-1.2 5-4.1 5-7.4a8 8 0 0 0-8-8z"/>
+              <path d="M9.5 9h.01M14.5 9h.01"/>
+              <path d="M9.5 13a3.5 3.5 0 0 0 5 0"/>
+            </svg>
+          </div>
+          <div class="brand-details">
+            <div class="brand-title-row">
+              <h2 class="brand-name">MindCare AI</h2>
+              <span class="brand-version-tag">PyTorch DL</span>
+            </div>
+            <p class="brand-subtitle">AI Mental Health Assistant</p>
+          </div>
+        </div>
+
+        <div class="chat-header-actions">
+          <div id="server-status" class="status-indicator checking" title="Checking Flask backend connection...">
+            <span class="status-dot"></span>
+            <span class="status-label">CONNECTING...</span>
+          </div>
+
+          <button id="btn-metrics-modal" class="btn-icon-text" title="View Model Benchmark Performance" aria-label="Model Performance Metrics">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            <span class="btn-text-desktop">Benchmarks</span>
+          </button>
+
+          <button id="btn-restart" class="btn-icon-text btn-restart" title="Reset and start a fresh assessment" aria-label="Start New Analysis">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>
+            </svg>
+            <span class="btn-text-desktop">Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Assessment Progress Track -->
+      <div class="progress-bar-wrapper" id="progress-container">
+        <div class="progress-info">
+          <span id="progress-step-text">Assessment Ready</span>
+          <span id="progress-percent-text">0%</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Chat Messages Scroll Area -->
+      <div class="chat-area" id="chat-messages" tabindex="0" aria-live="polite">
+        <!-- Messages dynamically rendered here by script.js -->
+      </div>
+
+      <!-- Quick Option Chips Area (Floating above input) -->
+      <div class="quick-options-area" id="quick-options" aria-label="Suggested responses">
+        <!-- Interactive options / chips injected here based on active question -->
+      </div>
+
+      <!-- Chat Input Form -->
+      <form class="chat-input-form" id="chat-form" onsubmit="return false;">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="user-input" 
+            class="chat-input" 
+            placeholder="Type your response or select an option above..." 
+            autocomplete="off"
+            aria-label="Your response to the assistant"
+          >
+          <button type="submit" id="btn-send" class="btn-send" aria-label="Send message" title="Send message (Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">
+          <span>Press <strong>Enter ↵</strong> to submit answer</span>
+          <span class="privacy-note">🔒 Private & Secure Local Inference</span>
+        </div>
+      </form>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>MindCare AI &bull; Powered by PyTorch Deep Learning &bull; Confidential Assessment</p>
+    </footer>
+
+  </div>
+
+  <!-- Benchmarks Modal -->
+  <div id="metrics-modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="modal-title" class="modal-title">Model Performance & Benchmarks</h3>
+          <p class="modal-subtitle">Verified Evaluation Metrics on Stratified Test Split (58,473 samples)</p>
+        </div>
+        <button id="btn-close-modal" class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="model-comparison-grid">
+          <!-- PyTorch Production Card -->
+          <div class="model-card production">
+            <div class="model-card-badge">★ Active Production Model</div>
+            <h4 class="model-name">PyTorch Deep Learning</h4>
+            <p class="model-type">3-Layer Neural Network (77 &rarr; 128 &rarr; 64 &rarr; 32 &rarr; 2)</p>
+            <div class="metric-row highlight">
+              <span class="metric-label">Accuracy:</span>
+              <span class="metric-value">77.78%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Recall (Sensitivity):</span>
+              <span class="metric-value">83.97%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">F1-Score:</span>
+              <span class="metric-value">79.24%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">ROC-AUC:</span>
+              <span class="metric-value">86.93%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Precision:</span>
+              <span class="metric-value">75.01%</span>
+            </div>
+          </div>
+
+          <!-- Decision Tree Baseline Card -->
+          <div class="model-card fallback">
+            <div class="model-card-badge">CPU Fallback Estimator</div>
+            <h4 class="model-name">Decision Tree Classifier</h4>
+            <p class="model-type">Scikit-Learn (max_depth=10, 77 features)</p>
+            <div class="metric-row">
+              <span class="metric-label">Accuracy:</span>
+              <span class="metric-value">75.84%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Recall:</span>
+              <span class="metric-value">82.34%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">F1-Score:</span>
+              <span class="metric-value">77.48%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">ROC-AUC:</span>
+              <span class="metric-value">84.40%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Precision:</span>
+              <span class="metric-value">73.16%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-notice">
+          <strong>Note on Metrics:</strong> Model Accuracy (77.78%) represents the global classification rate across 58,473 test instances during offline training. Individual prediction confidence (e.g. 98.66%) represents the posterior probability calculated for a specific user's response profile.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-dismiss" class="btn-primary">Close Benchmarks</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

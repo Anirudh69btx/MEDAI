@@ -1,4 +1,4 @@
-﻿"""MindCare AI - Dataset loading and validation module.
+"""MindCare AI - Dataset loading and validation module.
 
 Responsible for loading the raw CSV dataset from ``config.DATASET_PATH`` and
 performing robust structural validation before handing the DataFrame to the
@@ -107,7 +107,11 @@ def load_dataset(
     # 3. Required column validation
     # ------------------------------------------------------------------ #
     if required_columns:
-        missing: List[str] = [c for c in required_columns if c not in df.columns]
+        cols_lower = {str(c).strip().lower(): c for c in df.columns}
+        missing: List[str] = [
+            c for c in required_columns
+            if c not in df.columns and c.strip().lower() not in cols_lower
+        ]
         if missing:
             msg = f"Missing required columns: {', '.join(missing)}"
             logger.error(msg)
